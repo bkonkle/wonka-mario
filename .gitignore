@@ -64,3 +64,6 @@ src/**/*.bs.js
 src/**/*.gen.tsx
 lib
 build
+
+.merlin
+.bsb.lock

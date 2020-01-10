@@ -1637,6 +1637,11 @@ browserslist@^4.6.0, browserslist@^4.8.2:
     electron-to-chromium "^1.3.322"
     node-releases "^1.1.44"
 
+bs-abstract@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/bs-abstract/-/bs-abstract-0.18.0.tgz#5ea6d131aaa8b1738832eca472c12d9e9ab6968a"
+  integrity sha512-kohLdSzk6fIw4u+O214/0paiPmhkJ+ChBOrXLWufQGT/aLu6hOWNlLIpWX7BFi7oGEsUMlIBxTs5jPWBT9gnjg==
+
 bs-platform@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-7.0.1.tgz#1d7b0ef6088b998dceee5db74a7cd8f01c20a3bd"
@@ -6096,10 +6101,10 @@ wide-align@^1.1.0:
   dependencies:
     string-width "^1.0.2 || 2"
 
-wonka@^4.0.0-rc.0:
-  version "4.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/wonka/-/wonka-4.0.0-rc.0.tgz#f97942b142071836eed2b6bea39952da304bc38b"
-  integrity sha512-q4bbHGO2Uw/ymQVa+hgRn8X2gJioSG7fcgNBuGKf+hBB2D/Uk3X9tgUYrBlW9XjzMwhjQdhPGAV7hZO6K0h89g==
+wonka@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/wonka/-/wonka-4.0.6.tgz#810e080f14f1ada7e5561b5504292de7fd5fdb1a"
+  integrity sha512-TYvOaAEyw50aracY97gXTcP5eifVNp+djbXbsBmR32luS4OTdIOBLasKH7SIlYVCATS5O5Fk0bP1gocg20AbIg==
 
 word-wrap@~1.2.3:
   version "1.2.3"

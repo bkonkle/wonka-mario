@@ -43,13 +43,18 @@ let fromWindowEvent = (event: string): sourceT('a) =>
 let isKey = (key: string): operatorT('a, 'a) =>
   curry(source =>
     curry(sink => {
-      Wonka_helpers.captureTalkback(source, (. signal, talkback) =>
+      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+
+      source((. signal) =>
         switch (signal) {
+        | Start(tb) =>
+          talkback := tb;
+          sink(. signal);
         | Push(event) when Dom.KeyboardEvent.key(event) !== key =>
-          talkback(. Pull)
+          talkback^(. Pull)
         | _ => sink(. signal)
         }
-      )
+      );
     })
   );
 
@@ -57,36 +62,45 @@ let isKey = (key: string): operatorT('a, 'a) =>
 let isButton = (button: int): operatorT('a, 'a) =>
   curry(source =>
     curry(sink => {
-      Wonka_helpers.captureTalkback(source, (. signal, talkback) => {
+      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+
+      source((. signal) =>
         switch (signal) {
+        | Start(tb) =>
+          talkback := tb;
+          sink(. signal);
         | Push(event) when Dom.MouseEvent.button(event) !== button =>
-          talkback(. Pull)
+          talkback^(. Pull)
         | _ => sink(. signal)
         }
-      })
+      );
     })
   );
 
 [@genType]
 let distinct: operatorT('a, 'a) =
-  curry(source => {
-    let prev = ref(None);
-
+  curry(source =>
     curry(sink => {
-      Wonka_helpers.captureTalkback(source, (. signal, talkback) =>
+      let prev = ref(None);
+      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+
+      source((. signal) =>
         switch (signal) {
+        | Start(tb) =>
+          talkback := tb;
+          sink(. signal);
         | Push(event) =>
           switch (prev^) {
-          | Some(prevEvent) when event === prevEvent => talkback(. Pull)
+          | Some(prevEvent) when event === prevEvent => talkback^(. Pull)
           | _ =>
             prev := Some(event);
             sink(. signal);
           }
         | _ => sink(. signal)
         }
-      )
-    });
-  });
+      );
+    })
+  );
 
 /**
  * Creates a source which will be `true` when the key matching the given key code is pressed, and
@@ -159,20 +173,25 @@ let touch: Wonka.Types.sinkT(Dom.TouchEvent.touchList) => unit =
 let tap: Wonka.Types.sinkT(bool) => unit =
   touch |> Wonka.map((. touches) => touchLength(touches) > 0) |> distinct;
 
+type mousePosition = {
+  x: float,
+  y: float,
+};
+
 /**
- * A signal containing the current mouse position.
+ * A source containing the current mouse position.
  */
 [@genType]
-let mousePos =
+let mousePos: sourceT(mousePosition) =
   fromWindowEvent("mousemove")
   |> Wonka.map((. event) => {
        let handler:
-         'a =>
-         Js.t({
+         Dom.MouseEvent.t =>
+         {
            .
            "x": float,
            "y": float,
-         }) = [%raw
+         } = [%raw
          {|
           function (e) {
             if (e.pageX && e.pageY) {
@@ -189,5 +208,77 @@ let mousePos =
         |}
        ];
 
-       handler(event);
+       let result = handler(event);
+
+       {x: result##x, y: result##y};
      });
+
+/**
+ * A source which yields the current time, as determined by `now`, on every animation frame.
+ */
+[@genType]
+let fromAnimationFrame: sourceT(float) =
+  curry(sink => {
+    let handler = t => sink(. Push(t));
+
+    let rafId = requestCancellableAnimationFrame(handler);
+
+    sink(.
+      Start(
+        (. signal) =>
+          switch (signal) {
+          | Close => cancelAnimationFrame(rafId)
+          | _ => ()
+          },
+      ),
+    );
+  });
+
+type windowDimensions = {
+  w: int,
+  h: int,
+};
+
+let getWindowDimensions = () => {
+  w: Dom.window |> Dom.Window.innerWidth,
+  h: Dom.window |> Dom.Window.innerHeight,
+};
+
+/**
+ * A source which contains the document window's current width and height.
+ */
+[@genType]
+let fromWindowDimensions: sourceT(windowDimensions) =
+  curry(sink => {
+    sink(. Push(getWindowDimensions()));
+
+    let addEventListener: ('a => unit) => unit = [%raw
+      {|
+        function ('resize', handler) {
+          window.addEventListener(event, handler);
+        }
+      |}
+    ];
+
+    let removeEventListener: ('a => unit) => unit = [%raw
+      {|
+        function ('resize', handler) {
+          window.removeEventListener(event, handler);
+        }
+      |}
+    ];
+
+    let handler = _ => sink(. Push(getWindowDimensions()));
+
+    sink(.
+      Start(
+        (. signal) =>
+          switch (signal) {
+          | Close => removeEventListener(handler)
+          | _ => ()
+          },
+      ),
+    );
+
+    addEventListener(handler);
+  });

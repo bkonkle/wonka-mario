@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "bs-webapi": "^0.15.6",
-    "wonka": "^4.0.0-rc.0"
+    "wonka": "^4.0.6"
   }
 }
