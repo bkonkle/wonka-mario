@@ -108,13 +108,13 @@ let distinct: operatorT('a, 'a) =
  */
 [@genType]
 let keyPressed: (string, sinkT(bool)) => unit =
-  key => {
+  key =>
     merge([|
+      fromList([false]), /* Initial value */
       fromWindowEvent("keydown") |> isKey(key) |> Wonka.map((. _) => true),
       fromWindowEvent("keyup") |> isKey(key) |> Wonka.map((. _) => false),
     |])
     |> distinct;
-  };
 
 /**
  * Creates a source which will be `true` when the given mouse button is pressed, and `false` when
@@ -122,8 +122,9 @@ let keyPressed: (string, sinkT(bool)) => unit =
  */
 [@genType]
 let mouseButton: (int, sinkT(bool)) => unit =
-  button => {
+  button =>
     merge([|
+      fromList([false]), /* Initial valu*/
       fromWindowEvent("mousedown")
       |> isButton(button)
       |> Wonka.map((. _) => true),
@@ -132,7 +133,6 @@ let mouseButton: (int, sinkT(bool)) => unit =
       |> Wonka.map((. _) => false),
     |])
     |> distinct;
-  };
 
 /**
  * Creates a source which will be `true` when the given mouse button is pressed, and `false` when
@@ -219,15 +219,22 @@ let mousePos: sourceT(mousePosition) =
 [@genType]
 let fromAnimationFrame: sourceT(float) =
   curry(sink => {
-    let handler = t => sink(. Push(t));
+    let canceled = ref(false);
+    let rec handler = t => {
+      sink(. Push(t));
 
-    let rafId = requestCancellableAnimationFrame(handler);
+      if (! canceled^) {
+        requestAnimationFrame(handler);
+      };
+    };
+
+    requestAnimationFrame(handler);
 
     sink(.
       Start(
         (. signal) =>
           switch (signal) {
-          | Close => cancelAnimationFrame(rafId)
+          | Close => canceled := true
           | _ => ()
           },
       ),
@@ -254,16 +261,16 @@ let fromWindowDimensions: sourceT(windowDimensions) =
 
     let addEventListener: ('a => unit) => unit = [%raw
       {|
-        function ('resize', handler) {
-          window.addEventListener(event, handler);
+        function (handler) {
+          window.addEventListener('resize', handler);
         }
       |}
     ];
 
     let removeEventListener: ('a => unit) => unit = [%raw
       {|
-        function ('resize', handler) {
-          window.removeEventListener(event, handler);
+        function (handler) {
+          window.removeEventListener('resize', handler);
         }
       |}
     ];

@@ -1,23 +1,15 @@
 open Wonka.Types;
 
 /**
- * Creates a source which yields the current value of the second source every time the first
- * source yields.
- */;
-// sampleOn = <B>(s: Signal<B>): Signal<B> => {
-//   const out = constant(s.get())
+ * Creates a past dependent source. The function takes the value of the input source and
+ * the previous value of the output source to produce the new value of the output source.
+ */
+[@genType]
+let foldp: (('a, 'b) => 'b, 'b, sourceT('a)) => sourceT('b) =
+  (func, seed, source) => {
+    let acc = ref(seed);
 
-//   this.subscribe(() => {
-//     out.set(s.get())
-//   })
-
-//   return out
-// }
-// let sampleOn: (sourceT('b), sourceT('a), sinkT('b)) => sourceT('b) =
-//   (b, a, sink) => {
-//     b((. signal) =>
-//       switch (signal) {
-//       | Start(talkback) => sink(. Start(talkback))
-//       | Push(left) => sink(. Push(left))
-//       | End => sink(. End)
-//   };
+    source
+    |> Wonka.onPush((. value) => acc := func(value, acc^))
+    |> Wonka.map((. _) => acc^);
+  };

@@ -1,6 +1,19 @@
 type activity = [ | `Walking | `Standing | `Jumping];
 
+let activityDescriptor = activity =>
+  switch (activity) {
+  | `Walking => "walk"
+  | `Standing => "stand"
+  | `Jumping => "jump"
+  };
+
 type direction = [ | `Left | `Right];
+
+let directionDescriptor = direction =>
+  switch (direction) {
+  | `Left => "left"
+  | `Right => "right"
+  };
 
 type character = {
   node: Webapi.Dom.Element.t,
@@ -41,9 +54,10 @@ let currentActivity = (c: character): activity =>
   isAirborne(c) ? `Jumping : isStanding(c) ? `Standing : `Walking;
 
 let charSpriteDescriptor = (c: character) => {
-  let activity = currentActivity(c);
+  let activity = c |> currentActivity |> activityDescriptor;
+  let dir = c.dir |> directionDescriptor;
 
-  {j|$activity|j};
+  {j|character $activity $dir|j};
 };
 
 let accel = (c: character) => isAirborne(c) ? airAccel : groundAccel;

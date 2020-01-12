@@ -25,11 +25,8 @@ let updatePosition = (c: character) => {
 let updateSprite = (c: character) => {
   let sprite = charSpriteDescriptor(c);
 
-  c.node
-  |> Dom.Element.asHtmlElement
-  |> Js.Option.getExn
-  |> Dom.HtmlElement.style
-  |> Dom.CssStyleDeclaration.setProperty("left", sprite, "");
+  (c.node |> Dom.Element.asHtmlElement |> Js.Option.getExn)
+  ->Dom.HtmlElement.setClassName(sprite);
 
   c;
 };
@@ -51,13 +48,12 @@ let onDomContentLoaded = (action: unit => unit) => {
 let getMarioNode = () =>
   try(
     Dom.document
-    |> Dom.Document.getElementById("mario")
+    |> Webapi.Dom.Document.asHtmlDocument
+    |> Js.Option.andThen((. htmlDocument) =>
+         Dom.HtmlDocument.body(htmlDocument)
+       )
     |> Js.Option.firstSome(
-         Dom.document
-         |> Webapi.Dom.Document.asHtmlDocument
-         |> Js.Option.andThen((. htmlDocument) =>
-              Dom.HtmlDocument.body(htmlDocument)
-            ),
+         Dom.document |> Dom.Document.getElementById("mario"),
        )
     |> Js.Option.getExn
   ) {
