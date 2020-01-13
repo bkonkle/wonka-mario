@@ -20,7 +20,7 @@ inputs
 |> Wonka.map((. (_, inputs)) => inputs)
 ```
 
-The main game loop is handled by a simple [`scan`](https://wonka.kitten.sh/api/operators#scan) function called `gameLogic` that takes the inputs (left, right, and jump) and the current character state, and combines a number of operations to evolve the character and return a new state. This gives us an efficient, type-safe way to manage state and events over time. The game state is evolved on each animation frame.
+The main game loop is handled by a simple [`scan`](https://wonka.kitten.sh/api/operators#scan) function called `gameLogic` that takes the inputs (left, right, and jump) and the current character state, and combines a number of operations to apply friction and update the character with a new state. This gives us an efficient and type-safe way to manage state and events over time, which I use to evolve the game state on each animation frame.
 
 ```re
 // Main.re
