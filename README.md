@@ -27,9 +27,9 @@ let gameLogic: (. state, inputs) => state =
 In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each frame, the inputs are sampled and fed through the `gameLogic` function with the current character state, evolving the game state on each animation frame tick. (The code is currently using `combine` and `map` as a workaround until I can identify an issue with using `sample` instead.)
 
 ```re
-    inputs
-    |> Wonka.combine(fromAnimationFrame)
-    |> Wonka.map((. (_, inputs)) => inputs)
+inputs
+|> Wonka.combine(fromAnimationFrame)
+|> Wonka.map((. (_, inputs)) => inputs)
 ```
 
 Finally, the sprite style and class names are updated, rendering the current state to the browser.
@@ -43,6 +43,5 @@ let render: (. state) => unit =
 ```
 
 ```re
-// Main.re
 |> Wonka.onPush(render)
 ```
