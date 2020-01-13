@@ -3,47 +3,46 @@ open Mario;
 
 let groundHeight = 40.0; // px
 
-let updatePosition = (c: character) => {
-  let left = c.x;
-  let bottom = c.y +. groundHeight;
+let updatePosition: character => unit =
+  c => {
+    let left = c.x;
+    let bottom = c.y +. groundHeight;
 
-  c.node
-  |> Dom.Element.asHtmlElement
-  |> Js.Option.getExn
-  |> Dom.HtmlElement.style
-  |> Dom.CssStyleDeclaration.setProperty("left", {j|$(left)px|j}, "");
+    c.node
+    |> Dom.Element.asHtmlElement
+    |> Js.Option.getExn
+    |> Dom.HtmlElement.style
+    |> Dom.CssStyleDeclaration.setProperty("left", {j|$(left)px|j}, "");
 
-  c.node
-  |> Dom.Element.asHtmlElement
-  |> Js.Option.getExn
-  |> Dom.HtmlElement.style
-  |> Dom.CssStyleDeclaration.setProperty("bottom", {j|$(bottom)px|j}, "");
+    c.node
+    |> Dom.Element.asHtmlElement
+    |> Js.Option.getExn
+    |> Dom.HtmlElement.style
+    |> Dom.CssStyleDeclaration.setProperty("bottom", {j|$(bottom)px|j}, "");
+  };
 
-  c;
-};
+let updateSprite: character => unit =
+  c => {
+    let sprite = charSpriteDescriptor(c);
 
-let updateSprite = (c: character) => {
-  let sprite = charSpriteDescriptor(c);
+    (c.node |> Dom.Element.asHtmlElement |> Js.Option.getExn)
+    ->Dom.HtmlElement.setClassName(sprite);
+  };
 
-  (c.node |> Dom.Element.asHtmlElement |> Js.Option.getExn)
-  ->Dom.HtmlElement.setClassName(sprite);
+let onDomContentLoaded: (unit => unit) => unit =
+  action => {
+    let readyState = [%bs.raw {| document.readyState |}];
 
-  c;
-};
-
-let onDomContentLoaded = (action: unit => unit) => {
-  let readyState = [%bs.raw {| document.readyState |}];
-
-  let addEventListener: ('a => unit) => unit = [%raw
-    {|
+    let addEventListener: ('a => unit) => unit = [%raw
+      {|
       function (handler) {
         window.addEventListener('DOMContentLoaded', handler);
       }
     |}
-  ];
+    ];
 
-  readyState === "interactive" ? action() : addEventListener(action);
-};
+    readyState === "interactive" ? action() : addEventListener(action);
+  };
 
 let getMarioNode = () =>
   try(

@@ -4,13 +4,14 @@ open WonkaDOM;
 
 type state = {mario: character};
 
-let gameLogic =
-  (. state: state, inputs: inputs) => (
-    {mario: marioLogic(inputs, state.mario)}: state
-  );
+let gameLogic: (. state, inputs) => state =
+  (. state, inputs) => {mario: marioLogic(inputs, state.mario)};
 
-let render =
-  (. state: state) => state.mario |> updatePosition |> updateSprite;
+let render: (. state) => unit =
+  (. state) => {
+    updatePosition(state.mario);
+    updateSprite(state.mario);
+  };
 
 let getInputs = (left: bool, right: bool, jump: bool) => {left, right, jump};
 
@@ -39,15 +40,12 @@ let main = () =>
            getInputs(left, right, jump)
          );
 
-    let game =
-      inputs
-      |> Wonka.combine(fromAnimationFrame)
-      |> Wonka.map((. (_, inputs)) => inputs);
-
-    game
+    inputs
+    |> Wonka.combine(fromAnimationFrame)
+    |> Wonka.map((. (_, inputs)) => inputs)
     |> Wonka.scan(gameLogic, initialState)
-    |> Wonka.map(render)
-    |> Wonka.subscribe((. _) => ())
+    |> Wonka.onPush(render)
+    |> Wonka.publish
     |> ignore;
   });
 
