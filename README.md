@@ -2,7 +2,11 @@
 
 ![Mario](https://user-images.githubusercontent.com/30199/56088170-97d4dc80-5e38-11e9-945b-293123d4fca7.gif)
 
-An example of a Mario game screen using [Phil Plückthun's](https://github.com/kitten) [Wonka](https://github.com/kitten/wonka) to manage user input and game state. Adapted from [Michael Ficarra's](https://github.com/michaelficarra) example [here](https://github.com/michaelficarra/purescript-demo-mario).
+An example of a Mario game screen using the excellent [Wonka](https://github.com/kitten/wonka) FRP library by [Phil Plückthun](https://github.com/kitten) to manage user input and game state.
+
+Adapted from [Michael Ficarra's](https://github.com/michaelficarra) example [here](https://github.com/michaelficarra/purescript-demo-mario).
+
+## Play a Demo
 
 Play a live demo [here](https://bkonkle.github.io/wonka-mario/)!
 
