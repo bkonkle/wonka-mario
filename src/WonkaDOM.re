@@ -6,38 +6,39 @@ open Wonka.Types;
 type mouseButton = [ | `Left | `Middle | `IE8Middle | `Right];
 
 [@genType]
-let fromWindowEvent = (event: string): sourceT('a) =>
-  curry(sink => {
-    let addEventListener: (string, 'a => unit) => unit = [%raw
-      {|
+let fromWindowEvent: string => sourceT('a) =
+  event =>
+    curry(sink => {
+      let addEventListener: (string, 'a => unit) => unit = [%raw
+        {|
         function (event, handler) {
           window.addEventListener(event, handler);
         }
       |}
-    ];
+      ];
 
-    let removeEventListener: (string, 'a => unit) => unit = [%raw
-      {|
+      let removeEventListener: (string, 'a => unit) => unit = [%raw
+        {|
         function (event, handler) {
           window.removeEventListener(event, handler);
         }
       |}
-    ];
+      ];
 
-    let handler = event => sink(. Push(event));
+      let handler = event => sink(. Push(event));
 
-    sink(.
-      Start(
-        (. signal) =>
-          switch (signal) {
-          | Close => removeEventListener(event, handler)
-          | _ => ()
-          },
-      ),
-    );
+      sink(.
+        Start(
+          (. signal) =>
+            switch (signal) {
+            | Close => removeEventListener(event, handler)
+            | _ => ()
+            },
+        ),
+      );
 
-    addEventListener(event, handler);
-  });
+      addEventListener(event, handler);
+    });
 
 [@genType]
 let isKey: string => operatorT('a, 'a) =
