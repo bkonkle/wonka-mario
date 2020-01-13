@@ -28,9 +28,9 @@ let main = () =>
       },
     };
 
-    let leftInputs = keyPressed("ArrowLeft");
-    let rightInputs = keyPressed("ArrowRight");
-    let jumpInputs = keyPressed(" ");
+    let leftInputs = fromKeyPressed("ArrowLeft");
+    let rightInputs = fromKeyPressed("ArrowRight");
+    let jumpInputs = fromKeyPressed(" ");
 
     let inputs =
       jumpInputs

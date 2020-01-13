@@ -7,41 +7,6 @@ open Wonka_helpers;
 type mouseButton = [ | `Left | `Middle | `IE8Middle | `Right];
 
 [@genType]
-let fromWindowEvent: string => sourceT('a) =
-  event =>
-    curry(sink => {
-      let addEventListener: (string, 'a => unit) => unit = [%raw
-        {|
-        function (event, handler) {
-          window.addEventListener(event, handler);
-        }
-      |}
-      ];
-
-      let removeEventListener: (string, 'a => unit) => unit = [%raw
-        {|
-        function (event, handler) {
-          window.removeEventListener(event, handler);
-        }
-      |}
-      ];
-
-      let handler = event => sink(. Push(event));
-
-      sink(.
-        Start(
-          (. signal) =>
-            switch (signal) {
-            | Close => removeEventListener(event, handler)
-            | _ => ()
-            },
-        ),
-      );
-
-      addEventListener(event, handler);
-    });
-
-[@genType]
 let isKey: string => operatorT('a, 'a) =
   key =>
     curry(source =>
@@ -106,12 +71,47 @@ let distinct: operatorT('a, 'a) =
     })
   );
 
+[@genType]
+let fromWindowEvent: string => sourceT('a) =
+  event =>
+    curry(sink => {
+      let addEventListener: (string, 'a => unit) => unit = [%raw
+        {|
+        function (event, handler) {
+          window.addEventListener(event, handler);
+        }
+      |}
+      ];
+
+      let removeEventListener: (string, 'a => unit) => unit = [%raw
+        {|
+        function (event, handler) {
+          window.removeEventListener(event, handler);
+        }
+      |}
+      ];
+
+      let handler = event => sink(. Push(event));
+
+      sink(.
+        Start(
+          (. signal) =>
+            switch (signal) {
+            | Close => removeEventListener(event, handler)
+            | _ => ()
+            },
+        ),
+      );
+
+      addEventListener(event, handler);
+    });
+
 /**
  * Creates a source which will be `true` when the key matching the given key code is pressed, and
  * `false` when it's released.
  */
 [@genType]
-let keyPressed: string => sourceT(bool) =
+let fromKeyPressed: string => sourceT(bool) =
   key =>
     merge([|
       fromList([false]), /* Initial value */
@@ -125,7 +125,7 @@ let keyPressed: string => sourceT(bool) =
  * it's released.
  */
 [@genType]
-let mouseButton: int => sourceT(bool) =
+let fromMouseButton: int => sourceT(bool) =
   button =>
     merge([|
       fromList([false]), /* Initial valu*/
@@ -140,20 +140,20 @@ let mouseButton: int => sourceT(bool) =
  * the middle button.
  */
 [@genType]
-let mouseButtonPressed: mouseButton => sourceT(bool) =
+let fromMouseButtonPressed: mouseButton => sourceT(bool) =
   button =>
     switch (button) {
-    | `Left => mouseButton(0)
-    | `Right => mouseButton(2)
-    | `Middle => mouseButton(2)
-    | `IE8Middle => mouseButton(4)
+    | `Left => fromMouseButton(0)
+    | `Right => fromMouseButton(2)
+    | `Middle => fromMouseButton(2)
+    | `IE8Middle => fromMouseButton(4)
     };
 
 /**
  * A source containing the current state of the touch device.
  */
 [@genType]
-let touch: sourceT(Dom.TouchEvent.touchList) =
+let fromTouch: sourceT(Dom.TouchEvent.touchList) =
   merge([|
     fromWindowEvent("touchstart"),
     fromWindowEvent("touchend"),
@@ -168,8 +168,8 @@ let touch: sourceT(Dom.TouchEvent.touchList) =
  * A source which will be `true` when at least one finger is touching the touch device, and `false`
  * otherwise.
  */
-let tap: sourceT(bool) =
-  touch |> map((. touches) => touchLength(touches) > 0) |> distinct;
+let fromTap: sourceT(bool) =
+  fromTouch |> map((. touches) => touchLength(touches) > 0) |> distinct;
 
 type mousePosition = {
   x: float,
@@ -180,7 +180,7 @@ type mousePosition = {
  * A source containing the current mouse position.
  */
 [@genType]
-let mousePos: sourceT(mousePosition) =
+let fromMousePos: sourceT(mousePosition) =
   fromWindowEvent("mousemove")
   |> map((. event) => {
        let handler:
