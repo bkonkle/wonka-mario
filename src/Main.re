@@ -4,11 +4,13 @@ open WonkaDOM;
 
 type state = {mario: character};
 
-let gameLogic = (inputs: inputs, state: state): state => {
-  mario: marioLogic(inputs, state.mario),
-};
+let gameLogic =
+  (. state: state, inputs: inputs) => (
+    {mario: marioLogic(inputs, state.mario)}: state
+  );
 
-let render = (. state: state) => updateSprite(updatePosition(state.mario));
+let render =
+  (. state: state) => state.mario |> updatePosition |> updateSprite;
 
 let getInputs = (left: bool, right: bool, jump: bool) => {left, right, jump};
 
@@ -43,7 +45,7 @@ let main = () =>
       |> Wonka.map((. (_, inputs)) => inputs);
 
     game
-    |> WonkaUtils.foldp(gameLogic, initialState)
+    |> Wonka.scan(gameLogic, initialState)
     |> Wonka.map(render)
     |> Wonka.subscribe((. _) => ())
     |> ignore;

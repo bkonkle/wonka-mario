@@ -8,6 +8,6 @@ Play a live demo [here](https://bkonkle.github.io/wonka-mario/)!
 
 ## How does it work?
 
-The main game loop is handled by a simple utility, [`foldp`](src/WonkaUtils.re#L8). In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each frame, the inputs (left, right, and jump) are sampled and fed through the `gameLogic` function with the current character state, which combines a number of operations to evolve the game state on each animation frame tick.
+The main game loop is handled by a simple `scan` function called `gameLogic` that takes the inputs (left, right, and jump) and the current character state, and combines a number of operations to evolve the character and return a new state. In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each frame, the inputs are sampled and fed through the `gameLogic` function with the current character state, evolving the game state on each animation frame tick.
 
 This gives us an efficient, type-safe way to manage state and events over time.
