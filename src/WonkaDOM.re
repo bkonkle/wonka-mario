@@ -155,15 +155,12 @@ let mouseButtonPressed: mouseButton => sourceT(bool) =
 [@genType]
 let touch: sourceT(Dom.TouchEvent.touchList) =
   merge([|
-    fromWindowEvent("touchstart")
-    |> map((. event) => Dom.TouchEvent.touches(event)),
-    fromWindowEvent("touchend")
-    |> map((. event) => Dom.TouchEvent.touches(event)),
-    fromWindowEvent("touchmove")
-    |> map((. event) => Dom.TouchEvent.touches(event)),
-    fromWindowEvent("touchcancel")
-    |> map((. event) => Dom.TouchEvent.touches(event)),
-  |]);
+    fromWindowEvent("touchstart"),
+    fromWindowEvent("touchend"),
+    fromWindowEvent("touchmove"),
+    fromWindowEvent("touchcancel"),
+  |])
+  |> map((. event) => Dom.TouchEvent.touches(event));
 
 [@bs.get] external touchLength: Dom.TouchEvent.touchList => int = "length";
 
