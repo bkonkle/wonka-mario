@@ -1,6 +1,7 @@
 open Webapi;
 open Wonka;
 open Wonka.Types;
+open Wonka_helpers;
 
 [@genType];
 type mouseButton = [ | `Left | `Middle | `IE8Middle | `Right];
@@ -45,7 +46,7 @@ let isKey: string => operatorT('a, 'a) =
   key =>
     curry(source =>
       curry(sink => {
-        let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+        let talkback = ref(talkbackPlaceholder);
 
         source((. signal) =>
           switch (signal) {
@@ -65,7 +66,7 @@ let isButton: int => operatorT('a, 'a) =
   button =>
     curry(source =>
       curry(sink => {
-        let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+        let talkback = ref(talkbackPlaceholder);
 
         source((. signal) =>
           switch (signal) {
@@ -85,7 +86,7 @@ let distinct: operatorT('a, 'a) =
   curry(source =>
     curry(sink => {
       let prev = ref(None);
-      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+      let talkback = ref(talkbackPlaceholder);
 
       source((. signal) =>
         switch (signal) {
@@ -114,8 +115,8 @@ let keyPressed: string => sourceT(bool) =
   key =>
     merge([|
       fromList([false]), /* Initial value */
-      fromWindowEvent("keydown") |> isKey(key) |> Wonka.map((. _) => true),
-      fromWindowEvent("keyup") |> isKey(key) |> Wonka.map((. _) => false),
+      fromWindowEvent("keydown") |> isKey(key) |> map((. _) => true),
+      fromWindowEvent("keyup") |> isKey(key) |> map((. _) => false),
     |])
     |> distinct;
 
@@ -128,12 +129,8 @@ let mouseButton: int => sourceT(bool) =
   button =>
     merge([|
       fromList([false]), /* Initial valu*/
-      fromWindowEvent("mousedown")
-      |> isButton(button)
-      |> Wonka.map((. _) => true),
-      fromWindowEvent("mouseup")
-      |> isButton(button)
-      |> Wonka.map((. _) => false),
+      fromWindowEvent("mousedown") |> isButton(button) |> map((. _) => true),
+      fromWindowEvent("mouseup") |> isButton(button) |> map((. _) => false),
     |])
     |> distinct;
 
@@ -159,13 +156,13 @@ let mouseButtonPressed: mouseButton => sourceT(bool) =
 let touch: sourceT(Dom.TouchEvent.touchList) =
   merge([|
     fromWindowEvent("touchstart")
-    |> Wonka.map((. event) => Dom.TouchEvent.touches(event)),
+    |> map((. event) => Dom.TouchEvent.touches(event)),
     fromWindowEvent("touchend")
-    |> Wonka.map((. event) => Dom.TouchEvent.touches(event)),
+    |> map((. event) => Dom.TouchEvent.touches(event)),
     fromWindowEvent("touchmove")
-    |> Wonka.map((. event) => Dom.TouchEvent.touches(event)),
+    |> map((. event) => Dom.TouchEvent.touches(event)),
     fromWindowEvent("touchcancel")
-    |> Wonka.map((. event) => Dom.TouchEvent.touches(event)),
+    |> map((. event) => Dom.TouchEvent.touches(event)),
   |]);
 
 [@bs.get] external touchLength: Dom.TouchEvent.touchList => int = "length";
@@ -175,7 +172,7 @@ let touch: sourceT(Dom.TouchEvent.touchList) =
  * otherwise.
  */
 let tap: sourceT(bool) =
-  touch |> Wonka.map((. touches) => touchLength(touches) > 0) |> distinct;
+  touch |> map((. touches) => touchLength(touches) > 0) |> distinct;
 
 type mousePosition = {
   x: float,
@@ -188,7 +185,7 @@ type mousePosition = {
 [@genType]
 let mousePos: sourceT(mousePosition) =
   fromWindowEvent("mousemove")
-  |> Wonka.map((. event) => {
+  |> map((. event) => {
        let handler:
          Dom.MouseEvent.t =>
          {
