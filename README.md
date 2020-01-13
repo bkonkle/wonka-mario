@@ -12,7 +12,7 @@ Play a live demo [here](https://bkonkle.github.io/wonka-mario/)!
 
 ## How does it work?
 
-The main game loop is handled by a simple [`scan`](https://wonka.kitten.sh/api/operators#scan) function called `gameLogic` that takes the inputs (left, right, and jump) and the current character state, and combines a number of operations to evolve the character and return a new state.
+The main game loop is handled by a simple [`scan`](https://wonka.kitten.sh/api/operators#scan) function called `gameLogic` that takes the inputs (left, right, and jump) and the current character state, and combines a number of operations to evolve the character and return a new state. This gives us an efficient, type-safe way to manage state and events over time.
 
 ```re
 // Main.re
@@ -20,17 +20,21 @@ let gameLogic: (. state, inputs) => state =
   (. state, inputs) => {mario: marioLogic(inputs, state.mario)};
 ```
 
-In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each frame, the inputs are sampled and fed through the `gameLogic` function with the current character state, evolving the game state on each animation frame tick. This gives us an efficient, type-safe way to manage state and events over time.
+```re
+|> Wonka.scan(gameLogic, initialState)
+```
+
+In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each frame, the inputs are sampled and fed through the `gameLogic` function with the current character state, evolving the game state on each animation frame tick. (The code is currently using `combine` and `map` as a workaround until I can identify an issue with using `sample` instead.)
 
 ```re
-// Main.re
-|> Wonka.scan(gameLogic, initialState)
+    inputs
+    |> Wonka.combine(fromAnimationFrame)
+    |> Wonka.map((. (_, inputs)) => inputs)
 ```
 
 Finally, the sprite style and class names are updated, rendering the current state to the browser.
 
 ```re
-// Main.re
 let render: (. state) => unit =
   (. state) => {
     updatePosition(state.mario);
