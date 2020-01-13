@@ -40,42 +40,44 @@ let fromWindowEvent = (event: string): sourceT('a) =>
   });
 
 [@genType]
-let isKey = (key: string): operatorT('a, 'a) =>
-  curry(source =>
-    curry(sink => {
-      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+let isKey: string => operatorT('a, 'a) =
+  key =>
+    curry(source =>
+      curry(sink => {
+        let talkback = ref(Wonka_helpers.talkbackPlaceholder);
 
-      source((. signal) =>
-        switch (signal) {
-        | Start(tb) =>
-          talkback := tb;
-          sink(. signal);
-        | Push(event) when Dom.KeyboardEvent.key(event) !== key =>
-          talkback^(. Pull)
-        | _ => sink(. signal)
-        }
-      );
-    })
-  );
+        source((. signal) =>
+          switch (signal) {
+          | Start(tb) =>
+            talkback := tb;
+            sink(. signal);
+          | Push(event) when Dom.KeyboardEvent.key(event) !== key =>
+            talkback^(. Pull)
+          | _ => sink(. signal)
+          }
+        );
+      })
+    );
 
 [@genType]
-let isButton = (button: int): operatorT('a, 'a) =>
-  curry(source =>
-    curry(sink => {
-      let talkback = ref(Wonka_helpers.talkbackPlaceholder);
+let isButton: int => operatorT('a, 'a) =
+  button =>
+    curry(source =>
+      curry(sink => {
+        let talkback = ref(Wonka_helpers.talkbackPlaceholder);
 
-      source((. signal) =>
-        switch (signal) {
-        | Start(tb) =>
-          talkback := tb;
-          sink(. signal);
-        | Push(event) when Dom.MouseEvent.button(event) !== button =>
-          talkback^(. Pull)
-        | _ => sink(. signal)
-        }
-      );
-    })
-  );
+        source((. signal) =>
+          switch (signal) {
+          | Start(tb) =>
+            talkback := tb;
+            sink(. signal);
+          | Push(event) when Dom.MouseEvent.button(event) !== button =>
+            talkback^(. Pull)
+          | _ => sink(. signal)
+          }
+        );
+      })
+    );
 
 [@genType]
 let distinct: operatorT('a, 'a) =
@@ -107,7 +109,7 @@ let distinct: operatorT('a, 'a) =
  * `false` when it's released.
  */
 [@genType]
-let keyPressed: (string, sinkT(bool)) => unit =
+let keyPressed: string => sourceT(bool) =
   key =>
     merge([|
       fromList([false]), /* Initial value */
@@ -121,7 +123,7 @@ let keyPressed: (string, sinkT(bool)) => unit =
  * it's released.
  */
 [@genType]
-let mouseButton: (int, sinkT(bool)) => unit =
+let mouseButton: int => sourceT(bool) =
   button =>
     merge([|
       fromList([false]), /* Initial valu*/
@@ -140,19 +142,20 @@ let mouseButton: (int, sinkT(bool)) => unit =
  * the middle button.
  */
 [@genType]
-let mouseButtonPressed = (button: mouseButton) =>
-  switch (button) {
-  | `Left => mouseButton(0)
-  | `Right => mouseButton(2)
-  | `Middle => mouseButton(2)
-  | `IE8Middle => mouseButton(4)
-  };
+let mouseButtonPressed: mouseButton => sourceT(bool) =
+  button =>
+    switch (button) {
+    | `Left => mouseButton(0)
+    | `Right => mouseButton(2)
+    | `Middle => mouseButton(2)
+    | `IE8Middle => mouseButton(4)
+    };
 
 /**
  * A source containing the current state of the touch device.
  */
 [@genType]
-let touch: Wonka.Types.sinkT(Dom.TouchEvent.touchList) => unit =
+let touch: sourceT(Dom.TouchEvent.touchList) =
   merge([|
     fromWindowEvent("touchstart")
     |> Wonka.map((. event) => Dom.TouchEvent.touches(event)),
@@ -170,7 +173,7 @@ let touch: Wonka.Types.sinkT(Dom.TouchEvent.touchList) => unit =
  * A source which will be `true` when at least one finger is touching the touch device, and `false`
  * otherwise.
  */
-let tap: Wonka.Types.sinkT(bool) => unit =
+let tap: sourceT(bool) =
   touch |> Wonka.map((. touches) => touchLength(touches) > 0) |> distinct;
 
 type mousePosition = {
