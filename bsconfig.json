@@ -11,7 +11,7 @@
     "in-source": true
   },
   "suffix": ".bs.js",
-  "bs-dependencies": ["wonka", "bs-webapi"],
+  "bs-dependencies": ["bs-webapi", "wonka", "wonka-dom"],
   "bsc-flags": ["-bs-super-errors"],
   "warnings": {
     "error": "+5"

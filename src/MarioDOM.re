@@ -1,6 +1,14 @@
 open Webapi;
 open Mario;
 
+let (andThen, firstSome, getExn) = Js.Option.(andThen, firstSome, getExn);
+let asHtmlElement = Dom.Element.(asHtmlElement);
+let (asHtmlDocument, getElementById) =
+  Dom.Document.(asHtmlDocument, getElementById);
+let (style, setClassName) = Dom.HtmlElement.(style, setClassName);
+let body = Dom.HtmlDocument.body;
+let setProperty = Dom.CssStyleDeclaration.setProperty;
+
 let groundHeight = 40.0; // px
 
 let updatePosition: character => unit =
@@ -9,24 +17,23 @@ let updatePosition: character => unit =
     let bottom = c.y +. groundHeight;
 
     c.node
-    |> Dom.Element.asHtmlElement
-    |> Js.Option.getExn
-    |> Dom.HtmlElement.style
-    |> Dom.CssStyleDeclaration.setProperty("left", {j|$(left)px|j}, "");
+    |> asHtmlElement
+    |> getExn
+    |> style
+    |> setProperty("left", {j|$(left)px|j}, "");
 
     c.node
-    |> Dom.Element.asHtmlElement
-    |> Js.Option.getExn
-    |> Dom.HtmlElement.style
-    |> Dom.CssStyleDeclaration.setProperty("bottom", {j|$(bottom)px|j}, "");
+    |> asHtmlElement
+    |> getExn
+    |> style
+    |> setProperty("bottom", {j|$(bottom)px|j}, "");
   };
 
 let updateSprite: character => unit =
   c => {
     let sprite = charSpriteDescriptor(c);
 
-    (c.node |> Dom.Element.asHtmlElement |> Js.Option.getExn)
-    ->Dom.HtmlElement.setClassName(sprite);
+    (c.node |> asHtmlElement |> getExn)->setClassName(sprite);
   };
 
 let onDomContentLoaded: (unit => unit) => unit =
@@ -47,14 +54,10 @@ let onDomContentLoaded: (unit => unit) => unit =
 let getMarioNode = () =>
   try(
     Dom.document
-    |> Webapi.Dom.Document.asHtmlDocument
-    |> Js.Option.andThen((. htmlDocument) =>
-         Dom.HtmlDocument.body(htmlDocument)
-       )
-    |> Js.Option.firstSome(
-         Dom.document |> Dom.Document.getElementById("mario"),
-       )
-    |> Js.Option.getExn
+    |> asHtmlDocument
+    |> andThen((. htmlDocument) => body(htmlDocument))
+    |> firstSome(Dom.document |> getElementById("mario"))
+    |> getExn
   ) {
   | _ => Js.Exn.raiseError("Unable to find a suitable node for Mario")
   };
