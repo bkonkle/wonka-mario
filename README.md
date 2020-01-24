@@ -10,6 +10,11 @@ Adapted from [Michael Ficarra's](https://github.com/michaelficarra) example [her
 
 Play a live demo [here](https://bkonkle.github.io/wonka-mario/)!
 
+## What libraries does it use?
+
+* [Wonka](https://github.com/kitten/wonka) v4
+* [WonkaDOM](https://github.com/bkonkle/wonka-dom)
+
 ## How does it work?
 
 In the [Main.re](src/Main.re) module, the `fromAnimationFrame` Wonka event source emits an event for each available frame. On each animation frame tick, the inputs are sampled. (The code is currently using `combine` and `map` as a workaround until I can identify an issue with using `sample` instead.)
@@ -45,3 +50,8 @@ let render: (. state) => unit =
 ```re
 |> Wonka.onPush(render)
 ```
+
+## To-Do
+
+* [ ] Unit tests
+* [ ] More sources
