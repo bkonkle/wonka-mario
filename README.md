@@ -50,8 +50,3 @@ let render: (. state) => unit =
 ```re
 |> Wonka.onPush(render)
 ```
-
-## To-Do
-
-* [ ] Unit tests
-* [ ] More sources
